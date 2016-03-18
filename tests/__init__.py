@@ -1,4 +1,5 @@
 """ Tests for pypicloud """
+import six
 from datetime import datetime
 from types import MethodType
 
@@ -18,6 +19,10 @@ except ImportError:
     import unittest
 
 
+if six.PY3:
+    unittest.TestCase.assertItemsEqual = unittest.TestCase.assertCountEqual
+
+
 def make_package(name='mypkg', version='1.1', filename=None,
                  last_modified=datetime.utcnow(), factory=Package, **kwargs):
     """ Convenience method for constructing a package """
@@ -35,7 +40,7 @@ class DummyStorage(IStorage):
 
     def list(self, factory=Package):
         """ Return a list or generator of all packages """
-        for args in self.packages.itervalues():
+        for args in six.itervalues(self.packages):
             yield args[0]
 
     def download_response(self, package):
@@ -66,11 +71,11 @@ class DummyCache(ICache):
 
     def all(self, name):
         """ Override this method to implement 'all' """
-        return [p for p in self.packages.itervalues() if p.name == name]
+        return [p for p in six.itervalues(self.packages) if p.name == name]
 
     def distinct(self):
         """ Get all distinct package names """
-        return list(set((p.name for p in self.packages.itervalues())))
+        return list(set((p.name for p in six.itervalues(self.packages))))
 
     def clear(self, package):
         """ Remove this package from the caching database """

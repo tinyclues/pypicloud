@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Tests for database cache implementations """
+import six
 import sys
 import transaction
 import calendar
@@ -381,10 +382,10 @@ class TestRedisCache(unittest.TestCase):
         self.assertTrue(self.redis.sismember(self.db.redis_set, pkg.name))
         data = self.redis.hgetall(self.db.redis_key(pkg.filename))
         pkg_data = {
-            'name': pkg.name,
-            'version': pkg.version,
-            'filename': pkg.filename,
-            'last_modified': pkg.last_modified.strftime('%s.%f'),
+            six.b('name'): six.b(pkg.name),
+            six.b('version'): six.b(pkg.version),
+            six.b('filename'): six.b(pkg.filename),
+            six.b('last_modified'): six.b(pkg.last_modified.strftime('%s.%f')),
         }
         pkg_data.update(pkg.data)
 
@@ -505,7 +506,7 @@ class TestRedisCache(unittest.TestCase):
         for pkg in pkgs:
             self.db.save(pkg)
         saved_pkgs = self.db.distinct()
-        self.assertItemsEqual(saved_pkgs, set([p.name for p in pkgs]))
+        self.assertItemsEqual(saved_pkgs, set([six.b(p.name) for p in pkgs]))
 
     def test_multiple_packages_same_version(self):
         """ Can upload multiple packages that have the same version """

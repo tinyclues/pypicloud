@@ -1,7 +1,7 @@
 """ Store package data in redis """
-from datetime import datetime
-
 import json
+import six
+from datetime import datetime
 
 from .base import ICache
 
@@ -61,7 +61,7 @@ class RedisCache(ICache):
         filename = data.pop('filename')
         last_modified = datetime.fromtimestamp(
             float(data.pop('last_modified')))
-        kwargs = dict(((k, json.loads(v)) for k, v in data.iteritems()))
+        kwargs = dict(((k, json.loads(v)) for k, v in six.iteritems(data)))
         return self.package_class(name, version, filename, last_modified,
                                   **kwargs)
 
@@ -97,7 +97,7 @@ class RedisCache(ICache):
             'filename': package.filename,
             'last_modified': package.last_modified.strftime('%s.%f'),
         }
-        for key, value in package.data.iteritems():
+        for key, value in six.iteritems(package.data):
             data[key] = json.dumps(value)
         pipe.hmset(self.redis_key(package.filename), data)
         pipe.sadd(self.redis_set, package.name)

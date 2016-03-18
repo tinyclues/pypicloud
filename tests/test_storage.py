@@ -1,13 +1,13 @@
 """ Tests for package storage backends """
 import time
-from cStringIO import StringIO
+from six.moves import StringIO
 from datetime import datetime
 
 import shutil
 import tempfile
 from mock import MagicMock, patch
 from moto import mock_s3
-from urlparse import urlparse, parse_qs
+from six.moves.urllib.parse import urlparse, parse_qs  # pylint: disable=F0401,E0611
 
 import boto
 import os
@@ -81,7 +81,7 @@ class TestS3Storage(unittest.TestCase):
 
         parts = urlparse(response.location)
         self.assertEqual(parts.scheme, 'https')
-        self.assertEqual(parts.netloc, 'mybucket.s3.amazonaws.com')
+        self.assertEqual(parts.hostname, 'mybucket.s3.amazonaws.com')
         self.assertEqual(parts.path, '/' + self.storage.get_path(package))
         query = parse_qs(parts.query)
         self.assertItemsEqual(query.keys(), ['Expires', 'Signature',
@@ -105,7 +105,7 @@ class TestS3Storage(unittest.TestCase):
         data = StringIO(datastr)
         self.storage.upload(package, data)
         key = list(self.bucket.list())[0]
-        self.assertEqual(key.get_contents_as_string(), datastr)
+        self.assertEqual(key.get_contents_as_string().decode('utf-8'), datastr)
         self.assertEqual(key.get_metadata('name'), package.name)
         self.assertEqual(key.get_metadata('version'), package.version)
 
